@@ -1636,6 +1636,12 @@ abstract class WC_Abstract_Order extends WC_Abstract_Legacy_Order {
 		$item = wc_get_container()->get( LegacyProxy::class )->get_instance_of( WC_Order_Item_Product::class );
 		$item->set_props( $args );
 		$item->set_backorder_meta();
+
+		$cogs_enabled = $this->cogs_is_enabled();
+		if ( $item->has_cogs() && $cogs_enabled ) {
+			$item->calculate_cogs_value();
+		}
+
 		$item->set_order_id( $this->get_id() );
 		$item->save();
 		$this->add_item( $item );

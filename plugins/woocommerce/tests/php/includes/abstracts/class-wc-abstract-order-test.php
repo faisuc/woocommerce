@@ -474,6 +474,43 @@ class WC_Abstract_Order_Test extends WC_Unit_Test_Case {
 	}
 
 	/**
+	 * @testdox add_product sets line item COGS from product when COGS is enabled.
+	 */
+	public function test_add_product_sets_line_item_cogs_from_product() {
+		$this->enable_cogs_feature();
+
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_cogs_value( 0.25 );
+		$product->save();
+
+		$order = new WC_Order();
+		$item_id = $order->add_product( $product, 1 );
+
+		$item = $order->get_item( $item_id );
+		$this->assertInstanceOf( WC_Order_Item_Product::class, $item );
+		$this->assertEquals( 0.25, $item->get_cogs_value() );
+	}
+
+	/**
+	 * @testdox add_product does not update order COGS total until explicit recalculation.
+	 */
+	public function test_add_product_does_not_update_order_cogs_total_until_recalculation() {
+		$this->enable_cogs_feature();
+
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_cogs_value( 1.5 );
+		$product->save();
+
+		$order = new WC_Order();
+		$order->add_product( $product, 2 );
+
+		$this->assertEquals( 0.0, $order->get_cogs_total_value() );
+
+		$order->calculate_cogs_total_value();
+		$this->assertEquals( 3.0, $order->get_cogs_total_value() );
+	}
+
+	/**
 	 * @testdox 'calculate_cogs_total_value' calculates the value from the prices and the quantities of all the items with a Cost of Goods Sold value.
 	 */
 	public function test_calculate_cogs_uses_product_info_and_sets_the_value() {

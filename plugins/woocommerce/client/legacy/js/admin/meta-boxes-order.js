@@ -374,6 +374,55 @@ jQuery( function ( $ ) {
 		reloaded_items: function() {
 			wc_meta_boxes_order.init_tiptip();
 			wc_meta_boxes_order_items.stupidtable.init();
+			wc_meta_boxes_order_items.update_totals_from_line_items();
+		},
+
+		/**
+		 * Recalculates Items Subtotal and Cost Total from line item data in the DOM
+		 * and updates the displayed totals. Used so the UI shows correct values
+		 * after adding/removing items without requiring a full order save.
+		 */
+		update_totals_from_line_items: function() {
+			var $wrapper = $( '#woocommerce-order-items .woocommerce_order_items_wrapper' );
+			if ( ! $wrapper.length || typeof accounting === 'undefined' || typeof woocommerce_admin_meta_boxes === 'undefined' ) {
+				return;
+			}
+
+			var totals;
+			if ( typeof window.wcOrderItemsTotalsCompute === 'function' ) {
+				totals = window.wcOrderItemsTotalsCompute( $wrapper[0] );
+			} else {
+				var $rows = $wrapper.find( '#order_line_items tr.item' );
+				var itemsSubtotal = 0;
+				var costTotal = 0;
+				$rows.each( function() {
+					var $row = $( this );
+					itemsSubtotal += parseFloat( $row.find( 'td.line_cost' ).attr( 'data-sort-value' ) ) || 0;
+					var $costCell = $row.find( 'td.item_cost_of_goods' );
+					if ( $costCell.length ) {
+						costTotal += parseFloat( $costCell.attr( 'data-sort-value' ) ) || 0;
+					}
+				} );
+				totals = { itemsSubtotal: itemsSubtotal, costTotal: costTotal };
+			}
+
+			var formatOptions = {
+				symbol:    woocommerce_admin_meta_boxes.currency_format_symbol,
+				decimal:   woocommerce_admin_meta_boxes.currency_format_decimal_sep,
+				thousand:  woocommerce_admin_meta_boxes.currency_format_thousand_sep,
+				precision: woocommerce_admin_meta_boxes.currency_format_num_decimals,
+				format:    woocommerce_admin_meta_boxes.currency_format
+			};
+
+			var $itemsSubtotalCell = $wrapper.find( '.wc-order-totals-items table.wc-order-totals' ).first().find( 'tr' ).first().find( 'td.total' );
+			if ( $itemsSubtotalCell.length ) {
+				$itemsSubtotalCell.html( accounting.formatMoney( totals.itemsSubtotal, formatOptions ) );
+			}
+
+			var $costTotalCell = $wrapper.find( 'td.total.cost-total' );
+			if ( $costTotalCell.length ) {
+				$costTotalCell.html( accounting.formatMoney( totals.costTotal, formatOptions ) );
+			}
 		},
 
 		// When the qty is changed, increase or decrease costs
