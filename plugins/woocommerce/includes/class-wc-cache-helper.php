@@ -34,6 +34,18 @@ class WC_Cache_Helper {
 		add_action( 'delete_version_transients', array( __CLASS__, 'delete_version_transients' ), 10 );
 		add_action( 'clean_term_cache', array( __CLASS__, 'clean_term_cache' ), 10, 2 );
 		add_action( 'edit_terms', array( __CLASS__, 'clean_term_cache' ), 10, 2 );
+		add_action( 'update_option_woocommerce_tax_total_display', array( __CLASS__, 'invalidate_cart_checkout_on_tax_display_change' ), 10 );
+	}
+
+	/**
+	 * Fire action when Display tax totals option is updated.
+	 *
+	 * Caching plugins can hook woocommerce_updated_tax_total_display to purge cart/checkout.
+	 *
+	 * @since 9.4.0
+	 */
+	public static function invalidate_cart_checkout_on_tax_display_change() {
+		do_action( 'woocommerce_updated_tax_total_display' );
 	}
 
 	/**

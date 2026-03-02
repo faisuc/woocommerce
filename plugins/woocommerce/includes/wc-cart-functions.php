@@ -601,3 +601,16 @@ function wc_get_cart_item_data_hash( $product ) {
 		)
 	);
 }
+
+/**
+ * Include tax total display option in cart hash so frontend invalidates cached cart when option changes.
+ *
+ * @param string $hash         Current hash.
+ * @param array  $cart_session Cart session.
+ * @return string Modified hash.
+ */
+function wc_cart_hash_include_tax_total_display( $hash, $cart_session ) {
+	$tax_display = get_option( 'woocommerce_tax_total_display', 'single' );
+	return md5( $hash . $tax_display );
+}
+add_filter( 'woocommerce_cart_hash', 'wc_cart_hash_include_tax_total_display', 10, 2 );

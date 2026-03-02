@@ -74,4 +74,22 @@ class WC_Cache_Helper_Tests extends WC_Unit_Test_Case {
 			WC_Cache_Helper::geolocation_ajax_get_location_hash()
 		);
 	}
+
+	/**
+	 * @testdox Updating Display tax totals option fires woocommerce_updated_tax_total_display.
+	 */
+	public function test_update_tax_total_display_fires_invalidation_action(): void {
+		$action_fired = false;
+		add_action(
+			'woocommerce_updated_tax_total_display',
+			function () use ( &$action_fired ) {
+				$action_fired = true;
+			}
+		);
+
+		update_option( 'woocommerce_tax_total_display', 'single' );
+		update_option( 'woocommerce_tax_total_display', 'itemized' );
+
+		$this->assertTrue( $action_fired );
+	}
 }

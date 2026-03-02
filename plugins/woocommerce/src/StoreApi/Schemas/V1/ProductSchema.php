@@ -716,8 +716,10 @@ class ProductSchema extends AbstractSchema {
 			$attributes,
 			function ( $defaults, $attribute ) use ( $product ) {
 				$meta_key              = wc_variation_attribute_name( $attribute->get_name() );
+				// Use slug format for variation attribute keys so they match the block context.
+				// Taxonomy attributes use wc_attribute_label so block JS normalization still matches.
 				$defaults[ $meta_key ] = [
-					'name'  => wc_attribute_label( $attribute->get_name(), $product ),
+					'name'  => $attribute->is_taxonomy() ? wc_attribute_label( $attribute->get_name(), $product ) : sanitize_title( $attribute->get_name() ),
 					'value' => null,
 				];
 				return $defaults;

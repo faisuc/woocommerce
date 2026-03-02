@@ -1159,4 +1159,22 @@ class WC_Cart_Test extends \WC_Unit_Test_Case {
 		$product->delete( true );
 		wp_delete_user( $user_id );
 	}
+
+	/**
+	 * @testdox Cart hash changes when Display tax totals option changes.
+	 */
+	public function test_cart_hash_includes_tax_total_display_option(): void {
+		WC()->cart->empty_cart();
+		$product = WC_Helper_Product::create_simple_product();
+		WC()->cart->add_to_cart( $product->get_id(), 1 );
+		WC()->cart->calculate_totals();
+
+		update_option( 'woocommerce_tax_total_display', 'single' );
+		$hash_single = WC()->cart->get_cart_hash();
+
+		update_option( 'woocommerce_tax_total_display', 'itemized' );
+		$hash_itemized = WC()->cart->get_cart_hash();
+
+		$this->assertNotEquals( $hash_single, $hash_itemized );
+	}
 }

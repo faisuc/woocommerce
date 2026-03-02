@@ -41,10 +41,14 @@ const TotalsTaxes = ( {
 		return null;
 	}
 
-	const showItemisedTaxes = getSetting(
-		'displayItemizedTaxes',
-		false
-	) as boolean;
+	// Prefer API tax_lines so display updates when Display tax totals option changes.
+	const hasItemizedLinesFromApi =
+		Array.isArray( taxLines ) && taxLines.length > 0;
+	const showItemisedTaxes = hasItemizedLinesFromApi
+		? true
+		: Array.isArray( taxLines ) && taxLines.length === 0
+			? false
+			: ( getSetting( 'displayItemizedTaxes', false ) as boolean );
 
 	const itemisedTaxItems: ReactElement | null =
 		showItemisedTaxes && taxLines.length > 0 ? (
